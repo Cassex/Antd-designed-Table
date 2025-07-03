@@ -1,33 +1,11 @@
 import React from 'react'
-import {Space, Table, Tag, Button, Modal, Input, InputNumber, Form, Select} from "antd";
+import {Space, Table, Tag, Button, Form} from "antd";
 import type {ColumnsType} from 'antd/es/table'
 import type {DataType, FormValues} from './types.ts'
 import {create, update, remove} from "./tableActionsSlice.ts";
 import type {RootState, AppDispatch} from "./store.ts";
 import {useDispatch, useSelector} from "react-redux";
-
-const tags = [
-    {
-        label: 'Developer',
-        value: 'developer',
-    },
-    {
-        label: 'Teacher',
-        value: 'teacher',
-    },
-    {
-        label: 'Nice',
-        value: 'nice',
-    },
-    {
-        label: 'Cool',
-        value: 'cool',
-    },
-    {
-        label: 'Loser',
-        value: 'loser',
-    },
-];
+import UserModal from "./UserModal.tsx";
 
 
 const App: React.FC = () => {
@@ -126,49 +104,13 @@ const App: React.FC = () => {
                         scroll={{y: 333}}
                         pagination={false}/>
                 </div>
-                <Modal
-                    title={editingUser ? 'Edit user' : 'Add new user'}
-                    open={isOpenModal}
-                    footer={false}
+                <UserModal
+                    visible={isOpenModal}
                     onCancel={formCancel}
-                >
-                    <Form
-                        form={form}
-                        layout='horizontal'
-                        labelCol={{span: 4}}
-                        wrapperCol={{span: 14}}
-                        onFinish={onFinish}
-                    >
-                        <Form.Item<FormValues> label='Name' name='name' rules={[{required: true, message: 'Type name'}]}>
-                            <Input/>
-                        </Form.Item>
-                        <Form.Item<FormValues> label='Age' name='age' rules={[{required: true, message: 'Type age'}]}>
-                            <InputNumber min={1} max={120}/>
-                        </Form.Item>
-                        <Form.Item<FormValues> label='Address' name='address'>
-                            <Input/>
-                        </Form.Item>
-                        <Form.Item<FormValues> label='Tags' name='tags'>
-                            <Select mode='multiple' placeholder='Select tags' options={tags}>
-                                Tags
-                            </Select>
-                        </Form.Item>
-                        <div className='modal-buttons'>
-                            <Form.Item label={null}>
-                                <Button variant='outlined' onClick={formCancel}>
-                                    Cancel
-                                </Button>
-                            </Form.Item>
-
-                            <Form.Item label={null}>
-                                <Button type="primary" htmlType="submit">
-                                    Submit
-                                </Button>
-                            </Form.Item>
-                        </div>
-                    </Form>
-
-                </Modal>
+                    onFinish={onFinish}
+                    editingUser={editingUser}
+                    form={form}
+                />
             </>
         )
     }
