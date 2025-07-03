@@ -1,0 +1,18 @@
+body {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding-top: 100px;
+}
+
+.table {
+  min-width: 1250px;
+  max-width: 1250px;
+  height: 350px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
