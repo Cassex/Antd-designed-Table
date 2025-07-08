@@ -1,7 +1,7 @@
-import React from 'react';
+import {FC} from 'react';
 import { Modal, Form, Input, InputNumber, Select, Button } from 'antd';
 import type { FormInstance } from 'antd';
-import type { DataType, FormValues } from './types';
+import type { DataType, FormValues } from '../types.ts';
 
 interface Props {
     visible: boolean;
@@ -19,7 +19,7 @@ const tags = [
     { label: 'Loser', value: 'loser' },
 ];
 
-const UserModal: React.FC<Props> = ({ visible, onCancel, onFinish, editingUser, form }) => {
+const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form }) => {
     return (
         <Modal
             title={editingUser ? 'Edit user' : 'Add new user'}

@@ -1,21 +1,16 @@
-import React from 'react'
+import {FC, useState} from 'react'
 import {Space, Table, Tag, Button, Form} from "antd";
 import type {ColumnsType} from 'antd/es/table'
-import type {DataType, FormValues} from './types.ts'
-import {create, update, remove} from "./tableActionsSlice.ts";
-import type {RootState, AppDispatch} from "./store.ts";
-import {useDispatch, useSelector} from "react-redux";
-import UserModal from "./UserModal.tsx";
+import type {DataType, FormValues} from '../types.ts'
+import UserModal from "./UserModal";
+import {useGetUsersQuery, usePostUsersMutation} from '../api'
+import {v4 as uuidv4} from "uuid";
 
-
-const App: React.FC = () => {
-        const users = useSelector((state: RootState) => state.users)
-        const dispatch = useDispatch<AppDispatch>()
-
-        // const [tableData, setTableData] = React.useState<DataType[]>(data);
-        const [isOpenModal, setIsOpenModal] = React.useState(false);
-        const [editingUser, setEditingUser] = React.useState<DataType | null>(null);
-
+const App: FC = () => {
+        const {data: users} = useGetUsersQuery()
+        const [postUsers] = usePostUsersMutation()
+        const [isOpenModal, setIsOpenModal] = useState(false);
+        const [editingUser, setEditingUser] = useState<DataType | null>(null);
         const [form] = Form.useForm<FormValues>();
 
         const showAddModal = () => {
@@ -30,17 +25,24 @@ const App: React.FC = () => {
             setIsOpenModal(true)
         }
 
-        const onFinish = (values: Omit<DataType, 'key'>) => {
+        const onFinish = async (values: FormValues) => {
+            let updatedUsers = [...(users ?? [])]
             if (editingUser) {
-                dispatch(update({key: editingUser.key, values}))
+                updatedUsers = updatedUsers.map(user =>
+                    user.key === editingUser.key
+                        ? {...user, ...values}
+                        : user
+                )
             } else {
-                dispatch(create(values))
+                updatedUsers.push({key: uuidv4(), ...values})
             }
+            await postUsers(updatedUsers)
             formCancel()
         }
 
-        const deleteUser = (key: string) => {
-            dispatch(remove(key))
+        const deleteUser = async (key: string) => {
+            const filteredUsers = (users ?? []).filter(user => user.key !== key)
+            await postUsers(filteredUsers)
         }
 
         const formCancel = () => {
@@ -90,13 +92,15 @@ const App: React.FC = () => {
 
         return (
             <>
-                <Button
-                    type='primary'
-                    style={{marginBottom: 15}}
-                    onClick={showAddModal}
-                >
-                    Add new user
-                </Button>
+                <div style={{display: 'flex', gap: 20}}>
+                    <Button
+                        type='primary'
+                        style={{marginBottom: 15}}
+                        onClick={showAddModal}
+                    >
+                        Add new user
+                    </Button>
+                </div>
                 <div className='table'>
                     <Table<DataType>
                         columns={columns}
