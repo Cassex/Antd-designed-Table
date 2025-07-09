@@ -3,12 +3,13 @@ import {Space, Table, Tag, Button, Form} from "antd";
 import type {ColumnsType} from 'antd/es/table'
 import type {DataType, FormValues} from '../types.ts'
 import UserModal from "./UserModal";
-import {useGetUsersQuery, usePostUsersMutation} from '../api'
-import {v4 as uuidv4} from "uuid";
+import {useGetUsersQuery, useCreateUserMutation, useDeleteUserMutation, useUpdateUserMutation} from '../api'
 
 const App: FC = () => {
         const {data: users} = useGetUsersQuery()
-        const [postUsers] = usePostUsersMutation()
+        const [createUser] = useCreateUserMutation()
+        const [updateUser] = useUpdateUserMutation()
+        const [deleteUser] = useDeleteUserMutation()
         const [isOpenModal, setIsOpenModal] = useState(false);
         const [editingUser, setEditingUser] = useState<DataType | null>(null);
         const [form] = Form.useForm<FormValues>();
@@ -26,30 +27,30 @@ const App: FC = () => {
         }
 
         const onFinish = async (values: FormValues) => {
-            let updatedUsers = [...(users ?? [])]
-            if (editingUser) {
-                updatedUsers = updatedUsers.map(user =>
-                    user.key === editingUser.key
-                        ? {...user, ...values}
-                        : user
-                )
-            } else {
-                updatedUsers.push({key: uuidv4(), ...values})
+            try {
+                if (editingUser && typeof editingUser.id !== 'undefined') {
+                    await updateUser({
+                        id: editingUser.id,
+                        values,
+                    }).unwrap();
+                } else {
+                    await createUser(values).unwrap();
+                }
+                formCancel();
+            } catch (err) {
+                console.error('Ошибка при сохранении:', err);
             }
-            await postUsers(updatedUsers)
-            formCancel()
-        }
+        };
 
-        const deleteUser = async (key: string) => {
-            const filteredUsers = (users ?? []).filter(user => user.key !== key)
-            await postUsers(filteredUsers)
-        }
+        const handleDeleteUser = async (id: number) => {
+            await deleteUser(id).unwrap();
+        };
 
         const formCancel = () => {
-            setEditingUser(null)
+            setEditingUser(null);
             form.resetFields();
-            setIsOpenModal(false)
-        }
+            setIsOpenModal(false);
+        };
 
         const columns: ColumnsType<DataType> = [
             {title: 'Name', dataIndex: 'name', key: 'name'},
@@ -83,10 +84,10 @@ const App: FC = () => {
                 render: (_, record) => (
                     <Space size="middle">
                         <Button onClick={() => showEditModal(record)}>Edit</Button>
-                        <Button onClick={() => deleteUser(record.key)}>Delete</Button>
+                        <Button onClick={() => handleDeleteUser(record.id)}>Delete</Button>
                     </Space>
-                )
-            }
+                ),
+            },
         ];
 
 
@@ -105,8 +106,10 @@ const App: FC = () => {
                     <Table<DataType>
                         columns={columns}
                         dataSource={users}
+                        rowKey="id"
                         scroll={{y: 333}}
-                        pagination={false}/>
+                        pagination={false}
+                    />
                 </div>
                 <UserModal
                     visible={isOpenModal}

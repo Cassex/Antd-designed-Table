@@ -1,15 +1,14 @@
-import { users } from './db.js';
+import {users} from './db.js';
 
-const flatMockServerConfig = [
+const mockServerConfig = [
     {
         database: {
             data: {
                 users,
             },
-            routes: {
-                '/api/users': '/users',
-            }
-        }
+        },
+
     }
 ];
-export default flatMockServerConfig
+
+export default mockServerConfig;
