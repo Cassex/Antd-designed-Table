@@ -9,8 +9,6 @@ interface Props {
     onFinish: (values: Omit<DataType, 'key'>) => void;
     editingUser: DataType | null;
     form: FormInstance<FormValues>;
-    isUpdating: Boolean;
-    isCreating: Boolean;
 }
 
 const tags = [
@@ -21,7 +19,7 @@ const tags = [
     { label: 'Loser', value: 'loser' },
 ];
 
-const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form, isUpdating, isCreating }) => {
+const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form }) => {
     return (
         <Modal
             title={editingUser ? 'Edit user' : 'Add new user'}
@@ -53,7 +51,7 @@ const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form, 
                         <Button onClick={onCancel}>Cancel</Button>
                     </Form.Item>
                     <Form.Item label={null}>
-                        <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>Submit</Button>
+                        <Button type="primary" htmlType="submit">Submit</Button>
                     </Form.Item>
                 </div>
             </Form>

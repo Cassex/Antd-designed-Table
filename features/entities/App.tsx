@@ -3,17 +3,23 @@ import {Space, Table, Tag, Button, Form, Spin} from "antd";
 import type {ColumnsType} from 'antd/es/table'
 import type {DataType, FormValues} from '../types.ts'
 import UserModal from "./UserModal";
-import {useGetUsersQuery, useCreateUserMutation, useDeleteUserMutation, useUpdateUserMutation} from '../api'
+import {useUnit} from 'effector-react'
+import {$users, userDeleted, userCreated, userUpdated, userDuplicated} from '../../app/effectorStore'
 
 const App: FC = () => {
-        const {data: users, isLoading: isUsersDataLoading} = useGetUsersQuery()
-        const [createUser, {isLoading: isCreating}] = useCreateUserMutation()
-        const [updateUser, {isLoading: isUpdating}] = useUpdateUserMutation()
-        const [deleteUser] = useDeleteUserMutation()
         const [isOpenModal, setIsOpenModal] = useState(false);
         const [editingUser, setEditingUser] = useState<DataType | null>(null);
-        const [deletingUser, setDeletingUser] = useState<number | null>(null);
         const [form] = Form.useForm<FormValues>();
+
+        const users = useUnit($users);
+        const userDelete = useUnit(userDeleted);
+        const userCreate = useUnit(userCreated);
+        const userUpdate = useUnit(userUpdated);
+        const userDuplicate = useUnit(userDuplicated);
+
+        const duplicateRecord = (record) => {
+            userDuplicate(record)
+        }
 
         const showAddModal = () => {
             setEditingUser(null)
@@ -30,23 +36,14 @@ const App: FC = () => {
         const onFinish = async (values: FormValues) => {
             try {
                 if (editingUser && typeof editingUser.id !== 'undefined') {
-                    await updateUser({
-                        id: editingUser.id,
-                        values,
-                    }).unwrap();
+                    userUpdate({...editingUser, ...values});
                 } else {
-                    await createUser(values).unwrap();
+                    userCreate(values)
                 }
                 formCancel();
             } catch (err) {
                 console.error('Ошибка при сохранении:', err);
             }
-        };
-
-        const handleDeleteUser = async (id: number) => {
-            setDeletingUser(id)
-            await deleteUser(id).unwrap();
-            setDeletingUser(null)
         };
 
         const formCancel = () => {
@@ -87,19 +84,12 @@ const App: FC = () => {
                 render: (_, record) => (
                     <Space size="middle">
                         <Button onClick={() => showEditModal(record)}>Edit</Button>
-                        <Button onClick={() => handleDeleteUser(record.id)} loading={record.id === deletingUser}>Delete</Button>
+                        <Button onClick={() => userDelete(record.id)}>Delete</Button>
+                        <Button color='cyan' variant='dashed' onClick={() => duplicateRecord(record)}>Copy</Button>
                     </Space>
                 ),
             },
         ];
-
-        if (isUsersDataLoading) {
-            return (
-                <Spin tip="Loading users..." size="large">
-                    <div style={{padding: 50}}/>
-                </Spin>
-            );
-        }
 
         return (
             <>
@@ -127,8 +117,6 @@ const App: FC = () => {
                     onFinish={onFinish}
                     editingUser={editingUser}
                     form={form}
-                    isCreating={isCreating}
-                    isUpdating={isUpdating}
                 />
             </>
         )
