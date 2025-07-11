@@ -1,17 +1,18 @@
 import {FC, useState} from 'react'
-import {Space, Table, Tag, Button, Form} from "antd";
+import {Space, Table, Tag, Button, Form, Spin} from "antd";
 import type {ColumnsType} from 'antd/es/table'
 import type {DataType, FormValues} from '../types.ts'
 import UserModal from "./UserModal";
 import {useGetUsersQuery, useCreateUserMutation, useDeleteUserMutation, useUpdateUserMutation} from '../api'
 
 const App: FC = () => {
-        const {data: users} = useGetUsersQuery()
-        const [createUser] = useCreateUserMutation()
-        const [updateUser] = useUpdateUserMutation()
+        const {data: users, isLoading: isUsersDataLoading} = useGetUsersQuery()
+        const [createUser, {isLoading: isCreating}] = useCreateUserMutation()
+        const [updateUser, {isLoading: isUpdating}] = useUpdateUserMutation()
         const [deleteUser] = useDeleteUserMutation()
         const [isOpenModal, setIsOpenModal] = useState(false);
         const [editingUser, setEditingUser] = useState<DataType | null>(null);
+        const [deletingUser, setDeletingUser] = useState<number | null>(null);
         const [form] = Form.useForm<FormValues>();
 
         const showAddModal = () => {
@@ -43,7 +44,9 @@ const App: FC = () => {
         };
 
         const handleDeleteUser = async (id: number) => {
+            setDeletingUser(id)
             await deleteUser(id).unwrap();
+            setDeletingUser(null)
         };
 
         const formCancel = () => {
@@ -84,12 +87,19 @@ const App: FC = () => {
                 render: (_, record) => (
                     <Space size="middle">
                         <Button onClick={() => showEditModal(record)}>Edit</Button>
-                        <Button onClick={() => handleDeleteUser(record.id)}>Delete</Button>
+                        <Button onClick={() => handleDeleteUser(record.id)} loading={record.id === deletingUser}>Delete</Button>
                     </Space>
                 ),
             },
         ];
 
+        if (isUsersDataLoading) {
+            return (
+                <Spin tip="Loading users..." size="large">
+                    <div style={{padding: 50}}/>
+                </Spin>
+            );
+        }
 
         return (
             <>
@@ -117,6 +127,8 @@ const App: FC = () => {
                     onFinish={onFinish}
                     editingUser={editingUser}
                     form={form}
+                    isCreating={isCreating}
+                    isUpdating={isUpdating}
                 />
             </>
         )
