@@ -3,7 +3,7 @@ import type { DataType, FormValues } from './types';
 
 export const api = createApi({
     reducerPath: 'api',
-    baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:31299/' }),
+    baseQuery: fetchBaseQuery({ baseUrl: '/api/' }),
     tagTypes: ['Users'],
     endpoints: (build) => ({
         getUsers: build.query<DataType[], void>({
