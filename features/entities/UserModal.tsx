@@ -24,8 +24,13 @@ const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form }
         <Modal
             title={editingUser ? 'Edit user' : 'Add new user'}
             open={visible}
-            footer={false}
             onCancel={onCancel}
+            footer={
+                <div className="modal-buttons">
+                    <Button onClick={onCancel}>Cancel</Button>
+                    <Button type="primary" onClick={() => form.submit()}>Submit</Button>
+                </div>
+            }
         >
             <Form
                 form={form}
@@ -46,16 +51,9 @@ const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form }
                 <Form.Item<FormValues> label="Tags" name="tags">
                     <Select mode="multiple" placeholder="Select tags" options={tags} />
                 </Form.Item>
-                <div className="modal-buttons">
-                    <Form.Item label={null}>
-                        <Button onClick={onCancel}>Cancel</Button>
-                    </Form.Item>
-                    <Form.Item label={null}>
-                        <Button type="primary" htmlType="submit">Submit</Button>
-                    </Form.Item>
-                </div>
             </Form>
         </Modal>
+
     );
 };
 
