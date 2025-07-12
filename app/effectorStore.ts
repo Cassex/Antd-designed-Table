@@ -33,6 +33,7 @@ export const userDuplicated = createEvent<DataType>();
 
 
 $users.on(userCreated, (users, newUser) => [...users, {id: uuidv4(), ...newUser}]);
+
 $users.watch((users) => {
     console.log("USERS:", users);
 });
@@ -40,5 +41,13 @@ $users.watch((users) => {
 $users.on(userUpdated, (users, userUpdated) =>
    users.map(user => user.id === userUpdated.id ? userUpdated : user)
 );
+
 $users.on(userDeleted, (users, id) => users.filter(user => user.id !== id));
-$users.on(userDuplicated, (users, record) => [...users, { ...record, id: uuidv4()}])
+
+$users.on(userDuplicated, (users, record) =>
+    users.flatMap(user =>
+        user.id === record.id
+            ? [user, { ...record, id: uuidv4() }]
+            : [user]
+    )
+);
