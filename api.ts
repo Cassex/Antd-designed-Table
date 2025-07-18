@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { DataType, FormValues } from '../features/types';
+import type { DataType, FormValues } from './features/types';
 
 export const api = createApi({
     reducerPath: 'api',

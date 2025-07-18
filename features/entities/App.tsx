@@ -1,10 +1,14 @@
-import {FC, useState} from 'react'
+import {FC, useState, useEffect} from 'react'
 import {Space, Table, Tag, Button, Form, Spin} from "antd";
 import type {ColumnsType} from 'antd/es/table'
 import type {DataType, FormValues} from '../types.ts'
 import UserModal from "./UserModal";
 import {useUnit} from 'effector-react'
-import {$users, userDeleted, userCreated, userUpdated, userDuplicated} from '../../app/effectorStore'
+import {$users, userDeleted, userCreated, userUpdated, userDuplicated, usersQuery} from '../../app/effectorStore'
+
+
+// todo   вернуть загрузку
+
 
 const App: FC = () => {
         const [isOpenModal, setIsOpenModal] = useState(false);
@@ -12,10 +16,20 @@ const App: FC = () => {
         const [form] = Form.useForm<FormValues>();
 
         const users = useUnit($users);
+        const isLoading = useUnit(usersQuery.$pending);
+
+        useEffect(() => {
+            // console.log(isLoading)
+        }, [isLoading]);
+
         const userDelete = useUnit(userDeleted);
         const userCreate = useUnit(userCreated);
         const userUpdate = useUnit(userUpdated);
         const userDuplicate = useUnit(userDuplicated);
+
+        useEffect(() => {
+            usersQuery.start();
+        }, []);
 
         const duplicateRecord = (record) => {
             userDuplicate(record)

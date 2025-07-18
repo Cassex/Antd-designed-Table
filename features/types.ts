@@ -1,11 +1,21 @@
-interface DataType {
-    id: string;
-    name: string;
-    age: number;
-    address: string;
-    tags: string[];
-}
+import { z as zod } from 'zod';
+import { zodContract } from '@farfetched/zod';
 
-type FormValues = Omit<DataType, 'id'>;
+const DataType = zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    age: zod.number(),
+    address: zod.string().optional(),
+    tags: zod.array(zod.string()).optional(),
+});
 
-export type { DataType, FormValues };
+const DataTypeAnswer = DataType.omit({ id: true });
+
+const DataTypeContract = zodContract(zod.array(DataType));
+const DataTypeAnswerContract = zodContract(zod.array(DataTypeAnswer));
+
+type DataType = zod.infer<typeof DataType>;
+type FormValues = zod.infer<typeof DataTypeAnswer>;
+export const SingleUserContract = zodContract(DataTypeAnswer);
+
+export { DataTypeContract, DataTypeAnswerContract, DataType, FormValues };

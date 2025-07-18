@@ -10,5 +10,5 @@ createRoot(document.getElementById('root')!).render(
         <ConfigProvider theme={{token: {colorPrimary: '#8130cb'}}}>
             <App/>
         </ConfigProvider>
-    </StrictMode>,
+   </StrictMode>,
 )
