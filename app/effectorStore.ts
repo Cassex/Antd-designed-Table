@@ -1,7 +1,12 @@
-import {createEvent, createStore, sample} from "effector";
-import {v4 as uuidv4} from 'uuid';
-import type {DataType, FormValues} from "../features/types";
-import {usersQuery, createUserMutation, updateUserMutation, deleteUserMutation} from '../features/api'
+import { createEvent, createStore, sample } from "effector";
+
+import type { DataType, FormValues } from "../features/types";
+import {
+  usersQuery,
+  createUserMutation,
+  updateUserMutation,
+  deleteUserMutation,
+} from "../features/api";
 
 const $users = createStore<DataType[]>([]);
 
@@ -12,37 +17,42 @@ const userDuplicated = createEvent<DataType>();
 
 // Получение
 sample({
-    clock: usersQuery.finished.success,
-    fn: ({result}) => result,
-    target: $users,
+  clock: usersQuery.finished.success,
+  fn: ({ result }) => result,
+  target: $users,
 });
 
 // Добавление
 sample({
-    clock: userCreated,
-    target: createUserMutation.start,
+  clock: userCreated,
+  target: createUserMutation.start,
 });
 
 // Обновление
 sample({
-    clock: userUpdated,
-    target: updateUserMutation.start,
+  clock: userUpdated,
+  target: updateUserMutation.start,
 });
 
 // Удаление
 sample({
-    clock: userDeleted,
-    target: deleteUserMutation.start,
+  clock: userDeleted,
+  target: deleteUserMutation.start,
 });
 
 // Дублирование
 sample({
-    clock: userDuplicated,
-    fn: (record) => ({name: record.name, age: record.age, address: record.address, tags: record.tags}),
-    target: createUserMutation.start,
+  clock: userDuplicated,
+  fn: (record) => ({
+    name: record.name,
+    age: record.age,
+    address: record.address,
+    tags: record.tags,
+  }),
+  target: createUserMutation.start,
 });
 
-sample({
+/* sample({
     clock: [
         createUserMutation.finished.success,
         updateUserMutation.finished.success,
@@ -50,37 +60,36 @@ sample({
     ],
     target: usersQuery.start,
 });
-
+ */
 $users.watch((users) => {
-    console.log("USERS:", users);
+  console.log("USERS:", users);
 });
-
 
 // -- тесты --
 sample({
-    clock: usersQuery.finished.failure,
-    fn: (failure) => console.error('ПРОВАЛ usersQuery:', failure),
+  clock: usersQuery.finished.failure,
+  fn: (failure) => console.error("ПРОВАЛ usersQuery:", failure),
 });
 
 sample({
-    clock: usersQuery.finished.success,
-    fn: (success) => console.log('УСПЕХ usersQuery:', success),
+  clock: usersQuery.finished.success,
+  fn: (success) => console.log("УСПЕХ usersQuery:", success),
 });
 
 sample({
-    clock: createUserMutation.finished.failure,
-    fn: (failure) => console.error('ПРОВАЛ createUserMutation:', failure),
+  clock: createUserMutation.finished.failure,
+  fn: (failure) => console.error("ПРОВАЛ createUserMutation:", failure),
 });
 
 sample({
-    clock: createUserMutation.finished.success,
-    fn: (success) => console.log('УСПЕХ createUserMutation:', success),
+  clock: createUserMutation.finished.success,
+  fn: (success) => console.log("УСПЕХ createUserMutation:", success),
 });
 export {
-    $users,
-    userCreated,
-    userUpdated,
-    userDeleted,
-    userDuplicated,
-    usersQuery
-}
+  $users,
+  userCreated,
+  userUpdated,
+  userDeleted,
+  userDuplicated,
+  usersQuery,
+};
