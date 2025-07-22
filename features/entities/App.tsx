@@ -3,60 +3,37 @@ import {Space, Table, Tag, Button, Form, Spin} from "antd";
 import type {ColumnsType} from 'antd/es/table'
 import type {DataType, FormValues} from '../types.ts'
 import UserModal from "./UserModal";
+import CustomSpinner from "../components/CustomSpinner";
 import {useUnit} from 'effector-react'
-import {$users, userDeleted, userCreated, userUpdated, userDuplicated, usersQuery, UsersGate} from '../../app/effectorStore'
+import { LoadingOutlined } from '@ant-design/icons';
 import {
-    createUserMutation,
-    updateUserMutation,
-    deleteUserMutation
-} from '../api'
-
-
-// todo   вернуть загрузку
-
+    $users,
+    userDeleted,
+    userCreated,
+    userUpdated,
+    userDuplicated,
+    usersQuery,
+    UsersGate
+} from '../../app/effectorStore'
 
 const App: FC = () => {
         const [isOpenModal, setIsOpenModal] = useState(false);
         const [editingUser, setEditingUser] = useState<DataType | null>(null);
         const [form] = Form.useForm<FormValues>();
-    const [
-        users,
-        isFetching,
-        isCreating,
-        isUpdating,
-        isDeleting
-    ] = useUnit([
-        $users,
-        usersQuery.$pending,
-        createUserMutation.$pending,
-        updateUserMutation.$pending,
-        deleteUserMutation.$pending,
-    ]);
 
+        const [
+            users, isFetching,
+            userDelete, userCreate,
+            userUpdate, userDuplicate,
+        ] = useUnit([
+            $users, usersQuery.$pending,
+            userDeleted, userCreated,
+            userUpdated, userDuplicated,
+        ])
 
-        // const isLoading = useUnit(usersQuery.$pending);
-        //
-        // useEffect(() => {
-        //     console.log(isLoading)
-        // }, [isLoading]);
-        const userDelete = useUnit(userDeleted); //todo объединить
-        const userCreate = useUnit(userCreated);
-        const userUpdate = useUnit(userUpdated);
-        const userDuplicate = useUnit(userDuplicated);
-
-    const [deletingUser, setDeletingUser] = useState<number | null>(null);
-
-    const handleDeleteUser = (id: number) => {
-        setDeletingUser(id)
-        userDelete(id)
-        setDeletingUser(null)
-    };
-
-        // todo добавить GATE - почитать в эффекторе (первая загрузка данных)
         useEffect(() => {
-            console.log('status',UsersGate.status)
-            console.log('state',UsersGate.state)
-        }, [UsersGate]);
+            console.log('isFetching', isFetching)
+        }, [isFetching])
 
         const duplicateRecord = (record) => {
             userDuplicate(record)
@@ -125,8 +102,8 @@ const App: FC = () => {
                 render: (_, record) => (
                     <Space size="middle">
                         <Button onClick={() => showEditModal(record)}>Edit</Button>
-                        <Button onClick={() => handleDeleteUser(record.id)} loading={isDeleting && record.id === deletingUser}>Delete</Button>
-                        <Button color='cyan' variant='dashed' onClick={() => duplicateRecord(record)} loading={isCreating}>Copy</Button>
+                        <Button onClick={() => userDelete(record.id)}>Delete</Button>
+                        <Button color='cyan' variant='dashed' onClick={() => duplicateRecord(record)}>Copy</Button>
                     </Space>
                 ),
             },
@@ -134,7 +111,8 @@ const App: FC = () => {
 
         return (
             <>
-                <UsersGate />
+                <UsersGate/>
+
                 <div style={{display: 'flex', gap: 20}}>
                     <Button
                         type='primary'
@@ -144,17 +122,23 @@ const App: FC = () => {
                         Add new user
                     </Button>
                 </div>
+
                 <div className='table'>
-                    <Spin spinning={isFetching && !users.length} tip="Загрузка пользователей...">
                     <Table<DataType>
                         columns={columns}
                         dataSource={users}
                         rowKey="id"
                         scroll={{y: 333}}
                         pagination={false}
+                        loading={{
+                            indicator: <LoadingOutlined spin />,
+                            size: "large",
+                            spinning: isFetching,
+                            tip: !users.length ? "Загрузка пользователей..." : "Обновление..."
+                        }}
                     />
-                    </Spin>
                 </div>
+
                 <UserModal
                     visible={isOpenModal}
                     onCancel={formCancel}

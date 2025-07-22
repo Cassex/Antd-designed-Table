@@ -52,15 +52,6 @@ sample({
   target: createUserMutation.start,
 });
 
-/* sample({
-    clock: [
-        createUserMutation.finished.success,
-        updateUserMutation.finished.success,
-        deleteUserMutation.finished.success,
-    ],
-    target: usersQuery.start,
-});
- */
 $users.watch((users) => {
   console.log("USERS:", users);
 });

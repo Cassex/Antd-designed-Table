@@ -2,14 +2,6 @@ import {FC} from 'react';
 import { Modal, Form, Input, InputNumber, Select, Button } from 'antd';
 import type { FormInstance } from 'antd';
 import type { DataType, FormValues } from '../types.ts';
-import {
-    createUserMutation,
-    updateUserMutation,
-} from '../api'
-import {useUnit} from "effector-react";
-import {$users} from "../../app/effectorStore";
-
-
 
 interface Props {
     visible: boolean;
@@ -28,13 +20,7 @@ const tags = [
 ];
 
 const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form }) => {
-    const [
-        isCreating,
-        isUpdating,
-    ] = useUnit([
-        createUserMutation.$pending,
-        updateUserMutation.$pending,
-    ]);
+
     return (
         <Modal
             title={editingUser ? 'Edit user' : 'Add new user'}
@@ -43,7 +29,7 @@ const UserModal: FC<Props> = ({ visible, onCancel, onFinish, editingUser, form }
             footer={
                 <div className="modal-buttons">
                     <Button onClick={onCancel}>Cancel</Button>
-                    <Button type="primary" onClick={() => form.submit()} loading={editingUser && (isCreating || isUpdating)}>Submit</Button>
+                    <Button type="primary" onClick={() => form.submit()}>Submit</Button>
                 </div>
             }
         >

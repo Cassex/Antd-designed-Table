@@ -7,7 +7,6 @@ const mockServerConfig = [
                 users,
             },
         },
-
     }
 ];
 
