@@ -4,7 +4,12 @@ import type {ColumnsType} from 'antd/es/table'
 import type {DataType, FormValues} from '../types.ts'
 import UserModal from "./UserModal";
 import {useUnit} from 'effector-react'
-import {$users, userDeleted, userCreated, userUpdated, userDuplicated, usersQuery} from '../../app/effectorStore'
+import {$users, userDeleted, userCreated, userUpdated, userDuplicated, usersQuery, UsersGate} from '../../app/effectorStore'
+import {
+    createUserMutation,
+    updateUserMutation,
+    deleteUserMutation
+} from '../api'
 
 
 // todo   вернуть загрузку
@@ -14,22 +19,44 @@ const App: FC = () => {
         const [isOpenModal, setIsOpenModal] = useState(false);
         const [editingUser, setEditingUser] = useState<DataType | null>(null);
         const [form] = Form.useForm<FormValues>();
+    const [
+        users,
+        isFetching,
+        isCreating,
+        isUpdating,
+        isDeleting
+    ] = useUnit([
+        $users,
+        usersQuery.$pending,
+        createUserMutation.$pending,
+        updateUserMutation.$pending,
+        deleteUserMutation.$pending,
+    ]);
 
-        const users = useUnit($users);
-        const isLoading = useUnit(usersQuery.$pending);
 
-        useEffect(() => {
-            // console.log(isLoading)
-        }, [isLoading]);
-
-        const userDelete = useUnit(userDeleted);
+        // const isLoading = useUnit(usersQuery.$pending);
+        //
+        // useEffect(() => {
+        //     console.log(isLoading)
+        // }, [isLoading]);
+        const userDelete = useUnit(userDeleted); //todo объединить
         const userCreate = useUnit(userCreated);
         const userUpdate = useUnit(userUpdated);
         const userDuplicate = useUnit(userDuplicated);
 
+    const [deletingUser, setDeletingUser] = useState<number | null>(null);
+
+    const handleDeleteUser = (id: number) => {
+        setDeletingUser(id)
+        userDelete(id)
+        setDeletingUser(null)
+    };
+
+        // todo добавить GATE - почитать в эффекторе (первая загрузка данных)
         useEffect(() => {
-            usersQuery.start();
-        }, []);
+            console.log('status',UsersGate.status)
+            console.log('state',UsersGate.state)
+        }, [UsersGate]);
 
         const duplicateRecord = (record) => {
             userDuplicate(record)
@@ -98,8 +125,8 @@ const App: FC = () => {
                 render: (_, record) => (
                     <Space size="middle">
                         <Button onClick={() => showEditModal(record)}>Edit</Button>
-                        <Button onClick={() => userDelete(record.id)}>Delete</Button>
-                        <Button color='cyan' variant='dashed' onClick={() => duplicateRecord(record)}>Copy</Button>
+                        <Button onClick={() => handleDeleteUser(record.id)} loading={isDeleting && record.id === deletingUser}>Delete</Button>
+                        <Button color='cyan' variant='dashed' onClick={() => duplicateRecord(record)} loading={isCreating}>Copy</Button>
                     </Space>
                 ),
             },
@@ -107,6 +134,7 @@ const App: FC = () => {
 
         return (
             <>
+                <UsersGate />
                 <div style={{display: 'flex', gap: 20}}>
                     <Button
                         type='primary'
@@ -117,6 +145,7 @@ const App: FC = () => {
                     </Button>
                 </div>
                 <div className='table'>
+                    <Spin spinning={isFetching && !users.length} tip="Загрузка пользователей...">
                     <Table<DataType>
                         columns={columns}
                         dataSource={users}
@@ -124,6 +153,7 @@ const App: FC = () => {
                         scroll={{y: 333}}
                         pagination={false}
                     />
+                    </Spin>
                 </div>
                 <UserModal
                     visible={isOpenModal}

@@ -1,5 +1,5 @@
 import { createEvent, createStore, sample } from "effector";
-
+import { createGate } from 'effector-react';
 import type { DataType, FormValues } from "../features/types";
 import {
   usersQuery,
@@ -85,6 +85,7 @@ sample({
   clock: createUserMutation.finished.success,
   fn: (success) => console.log("УСПЕХ createUserMutation:", success),
 });
+
 export {
   $users,
   userCreated,
@@ -93,3 +94,12 @@ export {
   userDuplicated,
   usersQuery,
 };
+
+const UsersGate = createGate();
+
+sample({
+  clock: UsersGate.open,
+  target: usersQuery.start,
+});
+
+export {UsersGate}

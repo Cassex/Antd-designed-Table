@@ -11,7 +11,6 @@ const DataType = zod.object({
 
 const DataTypeAnswer = DataType.omit({ id: true });
 const DataTypeContract = zodContract(zod.array(DataType));
-const DataTypeAnswerContract = zodContract(zod.array(DataTypeAnswer));
 
 const NullableContract = zodContract(zod.null());
 
@@ -21,7 +20,6 @@ export const SingleUserContract = zodContract(DataTypeAnswer);
 
 export {
   DataTypeContract,
-  DataTypeAnswerContract,
   DataType,
   FormValues,
   NullableContract,
