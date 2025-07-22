@@ -46,7 +46,7 @@ const UsersTable: FC<{ onEdit: (record: DataType) => void; }> = ({ onEdit }) => 
                 <Space size="middle">
                     <Button onClick={() => onEdit(record)}>Edit</Button>
                     <Button onClick={() => userDelete(record.id)}>Delete</Button>
-                    <Button onClick={() => userDuplicate(record)}>Copy</Button>
+                    <Button color='cyan' variant='dashed' onClick={() => userDuplicate(record)}>Copy</Button>
                 </Space>
             ),
         },
