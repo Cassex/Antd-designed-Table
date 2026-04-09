@@ -37,7 +37,6 @@ Antd Designed Table
 - git clone https://github.com/Cassex/Antd-designed-Table.git
 - cd Antd-designed-Table
 - npm install
-- npm run dev
 - npm run dev:vite
 - pnpm run dev:mock
 
